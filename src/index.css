@@ -1,0 +1,523 @@
+/* ---- Reset & Base ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #22263a;
+  --border: #2e3247;
+  --text: #e8eaf6;
+  --text-muted: #8b90a8;
+  --accent: #4ade80;
+  --accent-dark: #22c55e;
+  --fwc: #facc15;
+  --fwc-dark: #eab308;
+  --nav-h: 64px;
+  --header-h: 64px;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* ---- App Shell ---- */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ---- Header ---- */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: var(--header-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-logo {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.header-titles {
+  flex: 1;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.header-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+
+.header-badge {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+}
+
+.header-owned {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.header-sep {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.header-total {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ---- Main ---- */
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---- Page ---- */
+.page {
+  padding: 12px 12px calc(var(--nav-h) + 12px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---- Progress Bar ---- */
+.progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.progress-bar.small {
+  height: 3px;
+  width: 64px;
+  flex: none;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.fwc-fill {
+  background: var(--fwc);
+}
+
+/* ---- Group Section ---- */
+.group-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.fwc-section {
+  border-color: var(--fwc-dark);
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  text-align: left;
+  gap: 8px;
+  transition: background 0.15s;
+}
+
+.group-header:active {
+  background: var(--surface2);
+}
+
+.fwc-header {
+  background: linear-gradient(135deg, rgba(234,179,8,0.08) 0%, transparent 60%);
+}
+
+.group-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.group-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.fwc-badge {
+  color: var(--fwc);
+}
+
+.group-teams {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 210px;
+}
+
+.group-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.group-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.group-chevron {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.group-progress {
+  padding: 0 16px 4px;
+}
+
+.group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+
+/* ---- Team Section ---- */
+.team-section {
+  padding: 12px 14px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.team-section:last-child {
+  border-bottom: none;
+}
+
+.team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  width: 100%;
+  text-align: left;
+}
+
+.subsection-toggle {
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.team-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.team-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-progress {
+  margin-bottom: 10px;
+}
+
+/* ---- Sticker Grid ---- */
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+  margin-top: 10px;
+}
+
+/* ---- Sticker Card ---- */
+.sticker-card {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  padding: 0;
+  min-width: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.sticker-card:active {
+  transform: scale(0.92);
+}
+
+.sticker-card.owned {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: var(--accent);
+}
+
+.sticker-code {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: -0.2px;
+  text-align: center;
+  line-height: 1.1;
+  pointer-events: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 2px;
+  max-width: 100%;
+}
+
+.sticker-card.owned .sticker-code {
+  color: var(--accent);
+}
+
+/* ---- Bottom Nav ---- */
+.bottom-nav {
+  display: flex;
+  height: var(--nav-h);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 0;
+  color: var(--text-muted);
+  transition: color 0.15s;
+  border-radius: 0;
+}
+
+.nav-btn.active {
+  color: var(--accent);
+}
+
+.nav-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.nav-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* ---- Stats Page ---- */
+.stats-page {
+  gap: 12px;
+}
+
+.stats-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.stats-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.stats-big-count {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.stats-owned {
+  color: var(--accent);
+}
+
+.stats-separator {
+  color: var(--border);
+  font-size: 28px;
+}
+
+.stats-total {
+  color: var(--text-muted);
+}
+
+.stats-row-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.stats-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stats-pct {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 34px;
+  text-align: right;
+}
+
+.stats-group-row {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stats-group-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.stats-group-row:first-of-type {
+  padding-top: 0;
+}
+
+.stats-group-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.stats-group-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stats-group-teams {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.stats-group-right {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stats-teams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.stats-team-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+
+.stats-team-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.stats-team-name {
+  font-size: 13px;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stats-team-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.stats-team-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 36px;
+  text-align: right;
+}
