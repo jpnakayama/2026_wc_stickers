@@ -23,6 +23,15 @@
     <title>FIFA World Cup 2026 — Figurinhas</title>
   </head>
   <body>
+    <div id="app-splash" class="app-splash" aria-hidden="true">
+      <img
+        class="app-splash__img"
+        src="/opening_img.png"
+        alt=""
+        decoding="async"
+        onerror="this.onerror=null;if(this.src.indexOf('.png')!==-1)this.src='/opening_img.jpg';else this.closest('#app-splash')?.remove()"
+      />
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

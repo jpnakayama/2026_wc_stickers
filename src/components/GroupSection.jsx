@@ -19,7 +19,7 @@ export default function GroupSection({ group, openTeamCode, onToggleTeam }) {
                 id={`team-flag-${group.id}-${t.code}`}
                 title={t.name}
               >
-                <TeamFlag variant="round" teamCode={t.code} teamName={t.name} width={104} />
+                <TeamFlag variant="round" teamCode={t.code} teamName={t.name} width={96} />
               </button>
             )
           })}

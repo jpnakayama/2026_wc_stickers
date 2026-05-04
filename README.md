@@ -4,7 +4,8 @@ PWA em React (Vite) para o álbum Panini da Copa 2026: **980** figurinhas (48 se
 
 ## Funcionalidades
 
-- **Coleção**: grelha de grupos (2 por linha); bandeiras circulares (PNG via [flagcdn](https://flagpedia.net/download/api)); toque na bandeira abre o painel de figurinhas em largura total **abaixo do par de grupos** (o grupo ao lado mantém-se na mesma linha).
+- **Coleção**: grelha de grupos (2 por linha); bandeiras circulares no **mesmo formato que Estatísticas** (PNG [flagcdn](https://flagpedia.net/download/api), `TeamFlag` 36×36, `object-fit: cover`); toque na bandeira abre o painel de figurinhas em largura total **abaixo do par de grupos** (o grupo ao lado mantém-se na mesma linha).
+- **Ecrã de abertura**: coloca `public/opening_img.png` ou `public/opening_img.jpg` — mostrada ao carregar e retirada logo a seguir ao primeiro paint da app.
 - **Estatísticas**: total, FWC, por seleção com ordenação por %.
 - **Ajustes** (sincronização + tema claro/escuro): acede pelo **logo** no cabeçalho (alterna com a coleção); preferência de tema em `localStorage` (`wc2026_theme`).
 - **Sincronização**: copiar/colar código entre dispositivos; UI em `Settings` + variante `embedded` na barra de sync.
@@ -69,6 +70,7 @@ Repositório ligado à Vercel, variáveis `UPSTASH_REDIS_*` definidas, **redeplo
 - `src/components/TeamFlag.jsx` / `src/data/flagCodes.js` — URLs de bandeira (flagcdn)
 - `src/data/stickers.js` — dados do álbum
 - `public/sw.js` — cache PWA (produção; só origem própria no `fetch`)
+- `public/opening_img.png` (ou `.jpg`) — imagem opcional do ecrã inicial
 
 ## Licença
 
