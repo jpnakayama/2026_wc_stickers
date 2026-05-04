@@ -1,7 +1,7 @@
-export default function StickerCard({ code, label, owned, onToggle }) {
+export default function StickerCard({ code, label, owned, onToggle, goldFirst = false }) {
   return (
     <button
-      className={`sticker-card${owned ? ' owned' : ''}`}
+      className={`sticker-card${owned ? ' owned' : ''}${goldFirst ? ' sticker-card--gold-first' : ''}`}
       onClick={() => onToggle(code)}
       title={label}
       aria-label={`${code} - ${label}${owned ? ' (tenho)' : ' (falta)'}`}

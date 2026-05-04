@@ -7,7 +7,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="FIFA World Cup 2026" />
-    <meta name="theme-color" content="#1a1d27" />
+    <meta id="meta-theme-color" name="theme-color" content="#1a1d27" />
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem('wc2026_theme') === 'light')
+            document.documentElement.setAttribute('data-theme', 'light')
+        } catch (e) {}
+      })()
+    </script>
     <meta name="description" content="Controle seu álbum de figurinhas da Copa do Mundo 2026" />
     <link rel="icon" type="image/jpeg" href="/logo.jpg" />
     <link rel="apple-touch-icon" href="/logo.jpg" />

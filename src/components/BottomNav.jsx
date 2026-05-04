@@ -113,21 +113,21 @@ export default function BottomNav({ page, onNavigate }) {
         className={`nav-btn${page === 'collection' ? ' active' : ''}`}
         onClick={() => onNavigate('collection')}
         type="button"
+        aria-label="Coleção"
       >
         <span className="nav-icon">
           <IconCollection />
         </span>
-        <span className="nav-label">Coleção</span>
       </button>
       <button
         className={`nav-btn${page === 'stats' ? ' active' : ''}`}
         onClick={() => onNavigate('stats')}
         type="button"
+        aria-label="Estatísticas"
       >
         <span className="nav-icon">
           <IconStats />
         </span>
-        <span className="nav-label">Estatísticas</span>
       </button>
     </nav>
   )

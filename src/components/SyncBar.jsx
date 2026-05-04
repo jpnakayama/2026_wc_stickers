@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { validateSyncIdInput } from '../utils/syncId'
 
 export default function SyncBar({
+  embedded = false,
   syncId,
   syncStatus,
   syncError,
@@ -47,7 +48,7 @@ export default function SyncBar({
         : 'Sincronizado na nuvem'
 
   return (
-    <div className="sync-bar">
+    <div className={`sync-bar${embedded ? ' sync-bar--embedded' : ''}`}>
       <div className="sync-bar-row">
         <span className="sync-bar-label">Código de sincronização</span>
         <button type="button" className="sync-bar-copy" onClick={copyCode} disabled={!syncId}>

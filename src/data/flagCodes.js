@@ -1,4 +1,7 @@
-/** ISO 3166-1 (flagcdn.com), incl. subdivisões da FIFA quando necessário */
+/**
+ * ISO 3166-1 alpha-2 (incl. gb-eng, gb-sct) → URLs no CDN usado pela Flagpedia
+ * (ver https://flagpedia.net/download/api — serviço flagcdn.com).
+ */
 export const TEAM_FLAG_ISO = {
   MEX: 'mx',
   RSA: 'za',
@@ -50,8 +53,23 @@ export const TEAM_FLAG_ISO = {
   PAN: 'pa',
 }
 
-export function flagUrl(teamCode, width = 40) {
+/** Larguras suportadas por flagcdn (w*) — escolhemos a menor ≥ pedido, ou a maior disponível */
+const FLAGCDN_W = [20, 40, 80, 160, 320, 640, 1280, 2560]
+
+function flagcdnWidthForDisplay(px) {
+  const n = Math.max(16, Math.round(px))
+  const found = FLAGCDN_W.find((w) => w >= n)
+  return found ?? FLAGCDN_W[FLAGCDN_W.length - 1]
+}
+
+/**
+ * URL PNG no CDN (Flagpedia / flagcdn).
+ * @param {string} teamCode código FIFA (ex.: MEX)
+ * @param {number} displayWidth largura lógica em CSS px (para escolher w20/w40/…)
+ */
+export function teamFlagImageUrl(teamCode, displayWidth = 40) {
   const iso = TEAM_FLAG_ISO[teamCode]
   if (!iso) return null
-  return `https://flagcdn.com/w${width}/${iso}.png`
+  const w = flagcdnWidthForDisplay(displayWidth * (typeof window !== 'undefined' && window.devicePixelRatio > 1 ? 1.25 : 1))
+  return `https://flagcdn.com/w${w}/${iso}.png`
 }

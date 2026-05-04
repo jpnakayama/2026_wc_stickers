@@ -1,4 +1,4 @@
-const CACHE = 'copa2026-v2'
+const CACHE = 'copa2026-v3'
 const PRECACHE = ['/', '/index.html']
 
 function isHttpGet(request) {
@@ -30,6 +30,13 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (!isHttpGet(e.request)) return
+  let reqUrl
+  try {
+    reqUrl = new URL(e.request.url)
+  } catch {
+    return
+  }
+  if (reqUrl.origin !== self.location.origin) return
 
   e.respondWith(
     caches.match(e.request).then((cached) => {
