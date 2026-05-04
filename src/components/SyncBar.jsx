@@ -44,7 +44,7 @@ export default function SyncBar({
     syncStatus === 'loading'
       ? 'A sincronizar…'
       : syncStatus === 'local_fallback'
-        ? 'Modo local (sem servidor ou Redis). Os dados ficam só neste dispositivo até configurares o Upstash.'
+        ? 'Modo local (API indisponível ou Supabase não configurado). Os dados ficam só neste dispositivo até as variáveis estarem corretas na Vercel.'
         : 'Sincronizado na nuvem'
 
   return (

@@ -1,15 +1,16 @@
-import { Redis } from '@upstash/redis'
+import { createClient } from '@supabase/supabase-js'
 
-const KEY_PREFIX = 'wc2026:collection:'
-
-function redisConfigured() {
+function supabaseConfigured() {
   return Boolean(
-    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
   )
 }
 
-function getRedis() {
-  return Redis.fromEnv()
+function getSupabase() {
+  if (!supabaseConfigured()) return null
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
 }
 
 function validateSyncId(id) {
@@ -38,29 +39,35 @@ export default async function handler(req, res) {
     return
   }
 
-  if (!redisConfigured()) {
-    res.status(503).json({ error: 'missing_redis_config' })
+  const supabase = getSupabase()
+  if (!supabase) {
+    res.status(503).json({ error: 'missing_supabase_config' })
     return
   }
 
-  const redis = getRedis()
-  const key = `${KEY_PREFIX}${syncId}`
-
   if (req.method === 'GET') {
     try {
-      const rawVal = await redis.get(key)
-      if (rawVal == null || rawVal === '') {
+      const { data, error } = await supabase
+        .from('collections')
+        .select('payload')
+        .eq('id', syncId)
+        .maybeSingle()
+
+      if (error) {
+        res.status(500).json({ error: 'read_failed', detail: error.message })
+        return
+      }
+      const payload = data?.payload
+      if (payload == null) {
         res.status(200).json({})
         return
       }
-      const parsed =
-        typeof rawVal === 'string' ? JSON.parse(rawVal) : rawVal
-      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      if (typeof payload !== 'object' || Array.isArray(payload)) {
         res.status(500).json({ error: 'corrupt_data' })
         return
       }
-      res.status(200).json(parsed)
-    } catch (e) {
+      res.status(200).json(payload)
+    } catch {
       res.status(500).json({ error: 'read_failed' })
     }
     return
@@ -86,7 +93,18 @@ export default async function handler(req, res) {
       return
     }
     try {
-      await redis.set(key, str)
+      const { error } = await supabase.from('collections').upsert(
+        {
+          id: syncId,
+          payload: body,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      )
+      if (error) {
+        res.status(500).json({ error: 'write_failed', detail: error.message })
+        return
+      }
       res.status(204).end()
     } catch {
       res.status(500).json({ error: 'write_failed' })

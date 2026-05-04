@@ -1,6 +1,6 @@
 # Copa 2026 — Controle de Figurinhas
 
-PWA em React (Vite) para o álbum Panini da Copa 2026: **980** figurinhas (48 seleções × 20 + 20 FWC). O estado sincroniza na **nuvem** ([Upstash Redis](https://upstash.com)) via `api/collection/[syncId]` (GET/PUT de JSON). Cada coleção tem um **código de sincronização** (`wc2026_sync_id` no browser). Sem Redis ou sem API ativa, a app usa **modo local** (`localStorage` neste dispositivo).
+PWA em React (Vite) para o álbum Panini da Copa 2026: **980** figurinhas (48 seleções × 20 + 20 FWC). O estado sincroniza na **nuvem** ([Supabase](https://supabase.com) Postgres): a rota `api/collection/[syncId]` faz GET/PUT de um objeto JSON (`payload`) na tabela **`collections`**. Cada coleção tem um **código de sincronização** (`wc2026_sync_id` no browser). Se a API responder 503 (Supabase não configurado na Vercel) ou falhar a rede, a app usa **modo local** (`localStorage` neste dispositivo).
 
 ## Funcionalidades
 
@@ -16,7 +16,14 @@ PWA em React (Vite) para o álbum Panini da Copa 2026: **980** figurinhas (48 se
 
 - Node.js 18+
 - [Vercel](https://vercel.com) para deploy
-- [Upstash Redis](https://upstash.com) (REST) — cria uma base e usa **REST API** no dashboard
+- [Supabase](https://supabase.com) (plano free chega) — projeto Postgres + API
+
+## Base de dados (uma tabela)
+
+No **SQL Editor** do Supabase, executa o ficheiro [`supabase/migrations/001_collections.sql`](supabase/migrations/001_collections.sql) (ou copia o conteúdo). Fica a tabela:
+
+- **`collections`**: `id` (text, PK = código de sync), `payload` (jsonb, mapa `código figurinha` → `true`), `updated_at`.
+- **RLS** ligado sem políticas públicas: só a **service role** usada na API serverless escreve/lê (sem utilizador Supabase Auth por agora).
 
 ## Variáveis na Vercel
 
@@ -24,10 +31,12 @@ PWA em React (Vite) para o álbum Panini da Copa 2026: **980** figurinhas (48 se
 
 | Variável | Onde copiar |
 |----------|-------------|
-| `UPSTASH_REDIS_REST_URL` | Upstash → Redis → REST API |
-| `UPSTASH_REDIS_REST_TOKEN` | Idem |
+| `SUPABASE_URL` | Supabase → Project Settings → API → Project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Idem → **service_role** (secreto; só servidor) |
 
-Depois de adicionar ou alterar variáveis: **faz redeploy** (Deployments → … → Redeploy). Sem isto a API pode responder 503 e a app fica em modo local.
+**Não** coloques a `service_role` no frontend Vite. A app chama `/api/collection/...` na Vercel, que usa estas variáveis.
+
+Depois de adicionar ou alterar variáveis: **redeploy**. Sem isto a API responde **503** e a app fica em modo local.
 
 Opcional no cliente (`.env.local` na raiz, não commitar):
 
@@ -39,9 +48,10 @@ Modelo: [`.env.example`](.env.example).
 
 ## Desenvolvimento local
 
-1. `.env.local` na raiz com `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (os mesmos valores da Upstash).
-2. `npx vercel dev` na raiz (serve `/api` e carrega o `.env.local`).
-3. Opcional: noutro terminal `npm run dev` (Vite); o [`vite.config.js`](vite.config.js) faz **proxy** de `/api` para `http://127.0.0.1:3000`.
+1. Cria o projeto no Supabase e corre o SQL da migração.
+2. `.env.local` na raiz com `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
+3. `npx vercel dev` na raiz (serve `/api` e carrega o `.env.local`).
+4. Opcional: noutro terminal `npm run dev` (Vite); o [`vite.config.js`](vite.config.js) faz **proxy** de `/api` para `http://127.0.0.1:3000`.
 
 Se vires **502** ou modo local: o Vite está a proxyar para a porta 3000 mas o `vercel dev` **não está a correr** aí — sobe o `vercel dev` primeiro.
 
@@ -57,11 +67,21 @@ npm run preview
 
 ## Deploy (Vercel)
 
-Repositório ligado à Vercel, variáveis `UPSTASH_REDIS_*` definidas, **redeploy**. Build: `vite build`, saída `dist/`.
+Repositório ligado à Vercel, variáveis `SUPABASE_*` definidas, **redeploy**. Build: `vite build`, saída `dist/`.
+
+### Checklist (produção)
+
+1. **Supabase** — SQL da migração executado; tabela `collections` visível em **Table Editor**.
+2. **Vercel** — `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (chave **service_role**, não `anon`).
+3. **Redeploy** após guardar as variáveis.
+4. **Opcional** — remover variáveis antigas `UPSTASH_REDIS_*` se ainda existirem (o código já não as usa).
+
+Na app, em **Ajustes**, o estado **“Sincronizado na nuvem”** confirma que o GET à API e o Supabase estão OK; **503** ou modo local indicam env em falta ou rede.
 
 ## Estrutura
 
-- `api/collection/[syncId].js` — API serverless
+- `api/collection/[syncId].js` — API serverless (Supabase JS + service role)
+- `supabase/migrations/001_collections.sql` — schema da tabela `collections`
 - `src/hooks/useStickers.js` — estado, debounce PUT, migração `wc2026_owned`
 - `src/hooks/useTheme.js` — tema claro/escuro e `theme-color`
 - `src/pages/Settings.jsx` — sincronização + aparência
