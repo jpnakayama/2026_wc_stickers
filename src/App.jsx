@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useStickers } from './hooks/useStickers'
 import BottomNav from './components/BottomNav'
+import SyncBar from './components/SyncBar'
 import Collection from './pages/Collection'
 import Stats from './pages/Stats'
 import { GROUPS, FWC_SECTIONS, TOTAL_STICKERS } from './data/stickers'
@@ -12,15 +13,31 @@ const ALL_CODES = [
 
 export default function App() {
   const [page, setPage] = useState('collection')
-  const { toggle, isOwned, countOwned } = useStickers()
+  const {
+    toggle,
+    isOwned,
+    countOwned,
+    syncId,
+    syncStatus,
+    syncError,
+    applySyncId,
+    reloadCollection,
+  } = useStickers()
   const totalOwned = countOwned(ALL_CODES)
 
   return (
     <div className="app">
       <header className="app-header">
-        <div className="header-logo">⚽</div>
+        <img
+          className="header-logo"
+          src="/logo.jpg"
+          alt=""
+          width={44}
+          height={44}
+          decoding="async"
+        />
         <div className="header-titles">
-          <h1 className="header-title">Copa 2026</h1>
+          <h1 className="header-title">FIFA World Cup 2026</h1>
           <p className="header-sub">Álbum de Figurinhas</p>
         </div>
         <div className="header-badge">
@@ -31,6 +48,13 @@ export default function App() {
       </header>
 
       <main className="app-main">
+        <SyncBar
+          syncId={syncId}
+          syncStatus={syncStatus}
+          syncError={syncError}
+          applySyncId={applySyncId}
+          reloadCollection={reloadCollection}
+        />
         {page === 'collection' && (
           <Collection isOwned={isOwned} onToggle={toggle} countOwned={countOwned} />
         )}

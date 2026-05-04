@@ -1,5 +1,15 @@
-const CACHE = 'copa2026-v1'
+const CACHE = 'copa2026-v2'
 const PRECACHE = ['/', '/index.html']
+
+function isHttpGet(request) {
+  if (request.method !== 'GET') return false
+  try {
+    const url = new URL(request.url)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -9,24 +19,38 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      )
+      .then(() => self.clients.claim())
   )
 })
 
 self.addEventListener('fetch', (e) => {
-  if (e.request.method !== 'GET') return
+  if (!isHttpGet(e.request)) return
+
   e.respondWith(
     caches.match(e.request).then((cached) => {
-      const network = fetch(e.request).then((res) => {
-        if (res && res.status === 200) {
+      if (cached) return cached
+
+      return fetch(e.request).then((res) => {
+        if (
+          res &&
+          res.status === 200 &&
+          res.type === 'basic' &&
+          isHttpGet(e.request)
+        ) {
           const clone = res.clone()
-          caches.open(CACHE).then((c) => c.put(e.request, clone))
+          caches.open(CACHE).then((c) => {
+            c.put(e.request, clone).catch(() => {
+              /* ignorar: scheme não suportado, quota, etc. */
+            })
+          })
         }
         return res
       })
-      return cached || network
     })
   )
 })
