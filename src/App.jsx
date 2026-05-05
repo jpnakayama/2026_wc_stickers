@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStickers } from './hooks/useStickers'
 import { useTheme } from './hooks/useTheme'
 import { supabase, supabaseConfigured } from './lib/supabaseClient'
@@ -40,6 +40,11 @@ function AuthenticatedApp({ session, theme, setTheme }) {
         <div className="header-titles">
           <h1 className="header-title">FIFA World Cup 2026</h1>
           <p className="header-sub">Álbum de Figurinhas</p>
+          {session?.user?.email && (
+            <p className="header-session-email" title={session.user.email}>
+              {session.user.email}
+            </p>
+          )}
         </div>
         <div className="header-badge">
           <span className="header-owned">{totalOwned}</span>
@@ -74,26 +79,70 @@ export default function App() {
   const { theme, setTheme } = useTheme()
   const [session, setSession] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
+  const authInitDoneRef = useRef(false)
 
   useEffect(() => {
     if (!supabase || !supabaseConfigured) {
       setSession(null)
       setAuthLoading(false)
+      authInitDoneRef.current = true
       return
     }
 
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s)
-      setAuthLoading(false)
-    })
+    let cancelled = false
+    authInitDoneRef.current = false
+
+    async function initAuth() {
+      try {
+        const {
+          data: { session: initial },
+        } = await supabase.auth.getSession()
+        if (cancelled) return
+
+        if (initial) {
+          const { data: { user }, error } = await supabase.auth.getUser()
+          if (cancelled) return
+          if (error) {
+            const msg = (error.message || '').toLowerCase()
+            const looksNetwork = msg.includes('failed to fetch') || msg.includes('network')
+            if (looksNetwork) {
+              setSession(initial)
+            } else {
+              await supabase.auth.signOut({ scope: 'local' })
+              setSession(null)
+            }
+          } else if (!user) {
+            await supabase.auth.signOut({ scope: 'local' })
+            setSession(null)
+          } else {
+            setSession(initial)
+          }
+        } else {
+          setSession(null)
+        }
+      } catch {
+        if (!cancelled) setSession(null)
+      } finally {
+        if (!cancelled) {
+          authInitDoneRef.current = true
+          setAuthLoading(false)
+        }
+      }
+    }
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, s) => {
+      if (cancelled || !authInitDoneRef.current) return
       setSession(s)
     })
 
-    return () => subscription.unsubscribe()
+    initAuth()
+
+    return () => {
+      cancelled = true
+      subscription.unsubscribe()
+    }
   }, [])
 
   if (authLoading) {

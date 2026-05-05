@@ -1,4 +1,4 @@
--- Álbum por utilizador autenticado (Google OAuth, etc.). RLS: cada um só vê a sua linha.
+-- Álbum por utilizador autenticado (Supabase Auth). RLS: cada um só vê a sua linha.
 
 create table if not exists public.albums (
   user_id uuid primary key references auth.users (id) on delete cascade,
