@@ -973,8 +973,23 @@ button {
   cursor: pointer;
 }
 
-.login-hint {
+.login-dev-hint {
   margin-top: 16px;
+}
+
+.login-dev-hint-summary {
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.login-dev-hint[open] .login-dev-hint-summary {
+  margin-bottom: 8px;
+}
+
+.login-hint {
+  margin-top: 0;
   font-size: 11px;
   color: var(--text-muted);
   line-height: 1.45;

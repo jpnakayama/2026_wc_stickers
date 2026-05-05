@@ -7,6 +7,18 @@ function isValidEmail(s) {
 
 const MIN_PASSWORD = 6
 
+function mapAuthError(raw) {
+  if (!raw || typeof raw !== 'string') return 'Erro ao processar o pedido.'
+  const m = raw.toLowerCase()
+  if (m.includes('rate limit') || m.includes('too many requests') || raw.includes('429')) {
+    return 'Demasiados pedidos de registo ou email neste intervalo (limite do Supabase). Espera alguns minutos e tenta de novo. Em produção, SMTP próprio no Supabase aumenta a fiabilidade e os limites.'
+  }
+  if (m.includes('already been registered') || m.includes('user already registered')) {
+    return 'Já existe uma conta com este email. Usa «Entrar» ou recupera a palavra-passe.'
+  }
+  return raw
+}
+
 export default function Login() {
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
@@ -39,7 +51,7 @@ export default function Login() {
         redirectTo: `${window.location.origin}/`,
       })
       if (error) {
-        setMsg(error.message)
+        setMsg(mapAuthError(error.message))
       } else {
         setMsgOk(true)
         setMsg('Se existir uma conta com este email, enviámos um link para repores a palavra-passe.')
@@ -75,7 +87,11 @@ export default function Login() {
           password,
         })
         if (error) {
-          setMsg(error.message === 'Invalid login credentials' ? 'Email ou palavra-passe incorretos.' : error.message)
+          setMsg(
+            error.message === 'Invalid login credentials'
+              ? 'Email ou palavra-passe incorretos.'
+              : mapAuthError(error.message)
+          )
         }
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -86,7 +102,7 @@ export default function Login() {
           },
         })
         if (error) {
-          setMsg(error.message)
+          setMsg(mapAuthError(error.message))
         } else if (data.session) {
           setMsgOk(true)
           setMsg('Conta criada. A entrar…')
@@ -215,12 +231,17 @@ export default function Login() {
           </p>
         )}
 
-        <p className="login-hint">
-          No Supabase: <strong>Authentication → Providers → Email</strong> com email+password ativo. Em{' '}
-          <strong>URL Configuration</strong> o Site URL e os Redirect URLs devem incluir o URL exacto da app (ex.{' '}
-          <code className="login-code">http://localhost:5173</code> e produção), senão o link do email de recuperação
-          falha. Opcional: modelo <strong>Reset password</strong> em Authentication → Emails.
-        </p>
+        {import.meta.env.DEV && (
+          <details className="login-dev-hint">
+            <summary className="login-dev-hint-summary">Nota para desenvolvimento (Supabase)</summary>
+            <p className="login-hint">
+              <strong>Authentication → Providers → Email</strong> com email+password ativo. Em{' '}
+              <strong>URL Configuration</strong>, Site URL e Redirect URLs devem incluir o URL exacto da app (ex.{' '}
+              <code className="login-code">http://localhost:5173</code> e produção), senão links de confirmação ou
+              recuperação falham. Opcional: modelo <strong>Reset password</strong> em Authentication → Emails.
+            </p>
+          </details>
+        )}
       </div>
     </div>
   )

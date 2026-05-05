@@ -45,6 +45,8 @@ Modelo local: [`.env.example`](.env.example) → **`.env.local`**.
    - **Redirect URLs**: inclui **exactamente** os URLs usados na app (ex. `http://localhost:5173`, `http://localhost:5173/`, produção). O link do email de **recuperação de palavra-passe** redireciona para estes URLs; se faltarem na lista, o Supabase bloqueia o redirect.
 4. (Opcional) **Authentication → Emails** — **SMTP** próprio para emails de confirmação/recuperação fiáveis. Podes personalizar o modelo **Reset password**; o link continua a usar `{{ .ConfirmationURL }}`.
 
+No plano gratuito o Supabase aplica **limites de taxa** a pedidos de auth (registo, magic link, recuperação, etc.). Se aparecer **429** / *email rate limit exceeded*, espera alguns minutos, evita testes repetidos em sequência ou configura **SMTP** / plano pago para limites mais altos.
+
 Após login válido, a sessão fica ativa e a app carrega o álbum.
 
 ### Recuperação de palavra-passe (fluxo técnico)
@@ -54,6 +56,8 @@ Após login válido, a sessão fica ativa e a app carrega o álbum.
 3. **`App.jsx`** mostra `RecoverPassword.jsx` até `auth.updateUser({ password })` ter sucesso; depois passa à app normal. O hash da URL com `type=recovery` também é usado no arranque como reforço se o evento chegar tarde.
 
 Se na interface aparecer o aviso **«Variáveis `VITE_SUPABASE_*` em falta»**, o build não recebeu URL nem chave anon: corrige **`.env.local`** (dev) ou as env vars na **Vercel** e volta a fazer **build/redeploy**.
+
+Na **build de produção** (ex. Vercel), o cartão de login **não** mostra o bloco longo de ajuda ao Supabase — isso só aparece em **`npm run dev`**, num `<details>` colapsável para quem configura o projeto.
 
 ## PWA e cache
 
