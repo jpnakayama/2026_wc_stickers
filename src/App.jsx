@@ -7,6 +7,7 @@ import Collection from './pages/Collection'
 import Stats from './pages/Stats'
 import Settings from './pages/Settings'
 import Login from './pages/Login'
+import RecoverPassword from './pages/RecoverPassword'
 import { GROUPS, FWC_SECTIONS, TOTAL_STICKERS } from './data/stickers'
 
 const ALL_CODES = [
@@ -79,6 +80,7 @@ export default function App() {
   const { theme, setTheme } = useTheme()
   const [session, setSession] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
+  const [passwordRecovery, setPasswordRecovery] = useState(false)
   const authInitDoneRef = useRef(false)
 
   useEffect(() => {
@@ -94,10 +96,16 @@ export default function App() {
 
     async function initAuth() {
       try {
+        const recoveryFromUrl =
+          typeof window !== 'undefined' && /type=recovery/.test(window.location.hash)
         const {
           data: { session: initial },
         } = await supabase.auth.getSession()
         if (cancelled) return
+
+        if (initial && recoveryFromUrl) {
+          setPasswordRecovery(true)
+        }
 
         if (initial) {
           const { data: { user }, error } = await supabase.auth.getUser()
@@ -132,8 +140,17 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, s) => {
-      if (cancelled || !authInitDoneRef.current) return
+    } = supabase.auth.onAuthStateChange((event, s) => {
+      if (cancelled) return
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecovery(true)
+        setSession(s)
+        return
+      }
+      if (event === 'SIGNED_OUT') {
+        setPasswordRecovery(false)
+      }
+      if (!authInitDoneRef.current) return
       setSession(s)
     })
 
@@ -159,6 +176,16 @@ export default function App() {
 
   if (!session) {
     return <Login />
+  }
+
+  if (passwordRecovery) {
+    return (
+      <RecoverPassword
+        onSuccess={() => {
+          setPasswordRecovery(false)
+        }}
+      />
+    )
   }
 
   return <AuthenticatedApp session={session} theme={theme} setTheme={setTheme} />

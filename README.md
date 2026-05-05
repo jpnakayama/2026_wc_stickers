@@ -1,10 +1,10 @@
 # Copa 2026 — Controle de Figurinhas
 
-PWA em React (Vite) para o álbum Panini da Copa 2026: **980** figurinhas. A coleção guarda-se na **nuvem** ([Supabase](https://supabase.com)): **login por email** (link mágico / OTP, sem Google) e uma linha por utilizador na tabela **`albums`** (`user_id` + `payload` jsonb). O browser usa a chave **anon** + RLS.
+PWA em React (Vite) para o álbum Panini da Copa 2026: **980** figurinhas. A coleção guarda-se na **nuvem** ([Supabase](https://supabase.com)): **email e palavra-passe** (`signInWithPassword` / `signUp`) com **Entrar**, **Cadastre-se** e **recuperação de palavra-passe** (`resetPasswordForEmail` + `updateUser`). Uma linha por utilizador na tabela **`albums`** (`user_id` + `payload` jsonb). O browser usa a chave **anon** + RLS.
 
 ## Funcionalidades
 
-- **Login (ecrã inicial sem sessão)**: indicas o email e recebes um **link de acesso** no correio (Supabase `signInWithOtp`). Abres o link para ficar autenticado; não usas palavra-passe na app.
+- **Login (ecrã inicial sem sessão)**: **Entrar** com email + palavra-passe ou **Cadastre-se** no primeiro acesso (mesmos campos). **Esqueci-me da palavra-passe** envia email com link; ao abrir, defines nova palavra-passe na app. Mínimo de 6 caracteres (Supabase).
 - **Sessão guardada no browser**: após entrar, visitas seguintes no mesmo dispositivo abrem logo a **coleção** até **terminares sessão** (Ajustes) ou limpares dados do site. **Guia anónima** não tem sessão, por isso mostra sempre o login.
 - **Coleção / Estatísticas / Ajustes** só com sessão válida; no arranque a app valida o token com o Supabase (`getUser`). Com sessão ativa, o **email** aparece em pequeno no cabeçalho.
 - **Coleção**: grelha de grupos; bandeiras (flagcdn); painel de figurinhas por linha de 2 grupos.
@@ -36,15 +36,22 @@ O Vite só expõe variáveis **`VITE_*`** no build:
 
 Modelo local: [`.env.example`](.env.example) → **`.env.local`**.
 
-## Autenticação por email no Supabase
+## Autenticação (email + palavra-passe) no Supabase
 
-1. **Authentication → Providers → Email** — ativa (é o que alimenta o link mágico).
-2. **Authentication → URL Configuration**  
-   - **Site URL**: URL de produção (ex. `https://teu-projeto.vercel.app`).  
-   - **Redirect URLs**: inclui `http://localhost:5173` (ou a porta do Vite) para desenvolvimento.
-3. (Opcional) **Authentication → Emails** — configura **SMTP** próprio se não quiseres depender dos limites de email do plano free.
+1. **Authentication → Providers → Email** — ativa e garante que o login por **email + password** está permitido (não só magic link).
+2. **Confirm email** — se estiver ativo, após **Cadastre-se** o utilizador tem de abrir o link do email antes de conseguir **Entrar**. Para desenvolvimento podes desativar confirmação temporariamente no mesmo ecrã do provider Email.
+3. **Authentication → URL Configuration**  
+   - **Site URL**: URL da app em produção (ex. `https://teu-projeto.vercel.app`), **não** deixes `localhost:3000` se a app Vite corre outra porta.  
+   - **Redirect URLs**: inclui **exactamente** os URLs usados na app (ex. `http://localhost:5173`, `http://localhost:5173/`, produção). O link do email de **recuperação de palavra-passe** redireciona para estes URLs; se faltarem na lista, o Supabase bloqueia o redirect.
+4. (Opcional) **Authentication → Emails** — **SMTP** próprio para emails de confirmação/recuperação fiáveis. Podes personalizar o modelo **Reset password**; o link continua a usar `{{ .ConfirmationURL }}`.
 
-O utilizador recebe um email do Supabase com um link; ao abrir, a sessão fica ativa e a app carrega o álbum.
+Após login válido, a sessão fica ativa e a app carrega o álbum.
+
+### Recuperação de palavra-passe (fluxo técnico)
+
+1. No login, **Esqueci-me da palavra-passe** → `resetPasswordForEmail` com `redirectTo` = origem atual da app (`/`).  
+2. O utilizador abre o link do email; o cliente Supabase (`detectSessionInUrl`) processa o hash e dispara **`PASSWORD_RECOVERY`**.  
+3. **`App.jsx`** mostra `RecoverPassword.jsx` até `auth.updateUser({ password })` ter sucesso; depois passa à app normal. O hash da URL com `type=recovery` também é usado no arranque como reforço se o evento chegar tarde.
 
 Se na interface aparecer o aviso **«Variáveis `VITE_SUPABASE_*` em falta»**, o build não recebeu URL nem chave anon: corrige **`.env.local`** (dev) ou as env vars na **Vercel** e volta a fazer **build/redeploy**.
 
@@ -68,9 +75,10 @@ npm run preview
 
 ## Estrutura
 
-- `src/App.jsx` — fluxo de auth (validação inicial, ecrã de login vs app autenticada)
+- `src/App.jsx` — fluxo de auth (validação inicial, login, recuperação de palavra-passe vs app autenticada)
 - `src/lib/supabaseClient.js` — cliente Supabase (anon)
-- `src/pages/Login.jsx` — link mágico por email
+- `src/pages/Login.jsx` — entrar / cadastrar / recuperar palavra-passe
+- `src/pages/RecoverPassword.jsx` — definir nova palavra-passe após link do email
 - `src/hooks/useStickers.js` — `albums` (debounce 500 ms)
 - `supabase/migrations/002_albums_auth.sql` — schema + RLS
 - `src/data/stickers.js` — dados do álbum
