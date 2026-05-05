@@ -764,131 +764,127 @@ button {
   text-align: right;
 }
 
-/* ---- Sync bar (nuvem) ---- */
-.sync-bar {
-  margin: 8px 12px 0;
-  padding: 12px 14px;
+/* ---- Auth (login) ---- */
+.auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.login-page {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--bg);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  flex-shrink: 0;
+  padding: 24px 20px;
 }
 
-.sync-bar--embedded {
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  border-radius: 0;
-}
-
-.sync-bar-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.sync-bar-label {
-  font-size: 11px;
+.login-title {
+  font-size: 18px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
 }
 
-.sync-bar-copy,
-.sync-bar-apply,
-.sync-bar-refresh {
+.login-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 20px;
+}
+
+.login-warn {
   font-size: 12px;
+  color: #fbbf24;
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+.login-code {
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.login-google-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
   font-weight: 600;
-  padding: 6px 12px;
+  font-size: 14px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.login-google-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--bg);
+}
+
+.login-google-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.login-msg {
+  margin-top: 14px;
+  font-size: 12px;
+  color: #f87171;
+  line-height: 1.4;
+}
+
+.login-hint {
+  margin-top: 16px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.settings-email {
+  color: var(--text);
+  word-break: break-all;
+}
+
+.settings-album-status {
+  margin-top: 4px;
+}
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.settings-reload-btn,
+.settings-signout-btn {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface2);
   color: var(--text);
 }
 
-.sync-bar-copy:disabled {
-  opacity: 0.45;
-}
-
-.sync-bar-code {
-  display: block;
-  font-size: 11px;
-  word-break: break-all;
-  color: var(--accent);
-  background: var(--bg);
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  margin-bottom: 8px;
-  line-height: 1.35;
-}
-
-.sync-bar-hint {
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.45;
-  margin-bottom: 10px;
-}
-
-.sync-bar-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-bottom: 10px;
-}
-
-.sync-bar-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.sync-bar-dot.online {
-  background: var(--accent);
-}
-
-.sync-bar-warn {
-  font-size: 11px;
-  color: #fbbf24;
-  margin-bottom: 8px;
-}
-
-.sync-bar-paste {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.sync-bar-input {
-  flex: 1;
-  min-width: 120px;
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 13px;
-  font-family: inherit;
-}
-
-.sync-bar-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.sync-bar-msg {
-  font-size: 12px;
-  color: var(--accent);
-  margin-top: 8px;
+.settings-signout-btn {
+  border-color: rgba(248, 113, 113, 0.45);
+  color: #f87171;
 }
 
 /* ---- Abertura (imagem em /public/opening_img.png ou .jpg) ---- */

@@ -1,61 +1,56 @@
 # Copa 2026 — Controle de Figurinhas
 
-PWA em React (Vite) para o álbum Panini da Copa 2026: **980** figurinhas (48 seleções × 20 + 20 FWC). O estado sincroniza na **nuvem** ([Supabase](https://supabase.com) Postgres): a rota `api/collection/[syncId]` faz GET/PUT de um objeto JSON (`payload`) na tabela **`collections`**. Cada coleção tem um **código de sincronização** (`wc2026_sync_id` no browser). Se a API responder 503 (Supabase não configurado na Vercel) ou falhar a rede, a app usa **modo local** (`localStorage` neste dispositivo).
+PWA em React (Vite) para o álbum Panini da Copa 2026: **980** figurinhas. A coleção guarda-se na **nuvem** ([Supabase](https://supabase.com)): **Supabase Auth** (hoje: **Google OAuth**) e uma linha por utilizador na tabela **`albums`** (`user_id` + `payload` jsonb). O browser usa a chave **anon** + RLS.
 
 ## Funcionalidades
 
-- **Coleção**: grelha de grupos (2 por linha); bandeiras circulares no **mesmo formato que Estatísticas** (PNG [flagcdn](https://flagpedia.net/download/api), `TeamFlag` 36×36, `object-fit: cover`); toque na bandeira abre o painel de figurinhas em largura total **abaixo do par de grupos** (o grupo ao lado mantém-se na mesma linha).
-- **Ecrã de abertura**: coloca `public/opening_img.png` ou `public/opening_img.jpg` — mostrada ao carregar e retirada logo a seguir ao primeiro paint da app.
-- **Estatísticas**: total, FWC, por seleção com ordenação por %.
-- **Ajustes** (sincronização + tema claro/escuro): acede pelo **logo** no cabeçalho (alterna com a coleção); preferência de tema em `localStorage` (`wc2026_theme`).
-- **Sincronização**: copiar/colar código entre dispositivos; UI em `Settings` + variante `embedded` na barra de sync.
-- **Figurinha 1**: texto dourado quando ainda não tens (só cor; sem destaque extra quando já está “tenho”).
-- **PWA**: `manifest.json`; **service worker só em produção** (`import.meta.env.PROD`). O `fetch` do SW **só intercepta pedidos à mesma origem** (evita interferir com imagens externas como bandeiras).
+- **Login** com **OAuth Google** (Supabase Auth) — podes trocar para email / magic link alterando o provider no Supabase e o código em `Login.jsx`.
+- **Coleção / Estatísticas / Ajustes** só após sessão iniciada; **terminar sessão** em Ajustes.
+- **Coleção**: grelha de grupos; bandeiras (flagcdn); painel de figurinhas por linha de 2 grupos.
+- **Ajustes**: conta (email), estado do álbum, recarregar, tema claro/escuro (logo no header).
+- **Migração local**: se existir `wc2026_owned` no `localStorage` (dados antigos) e o álbum na nuvem estiver vazio, a primeira carga tenta **enviar** esse mapa para o Supabase.
 
 ## Requisitos
 
 - Node.js 18+
 - [Vercel](https://vercel.com) para deploy
-- [Supabase](https://supabase.com) (plano free chega) — projeto Postgres + API
+- [Supabase](https://supabase.com) com Auth + Postgres
 
-## Base de dados (uma tabela)
+## Base de dados
 
-No **SQL Editor** do Supabase, executa o ficheiro [`supabase/migrations/001_collections.sql`](supabase/migrations/001_collections.sql) (ou copia o conteúdo). Fica a tabela:
+1. **`supabase/migrations/001_collections.sql`** — legado (código de sync + API serverless). **Já não é usado** pela app atual.
 
-- **`collections`**: `id` (text, PK = código de sync), `payload` (jsonb, mapa `código figurinha` → `true`), `updated_at`.
-- **RLS** ligado sem políticas públicas: só a **service role** usada na API serverless escreve/lê (sem utilizador Supabase Auth por agora).
+2. **`supabase/migrations/002_albums_auth.sql`** — tabela **`albums`** com RLS (`select` / `insert` / `update` só para `authenticated` e `auth.uid() = user_id`). **Executa este SQL** no SQL Editor do Supabase (depois de ativares o provider de login que usares).
 
-## Variáveis na Vercel
+## Variáveis na Vercel (importante)
 
-**Settings → Environment Variables** do projeto:
+O Vite **só expõe** variáveis com prefixo **`VITE_`** ao código do browser, no momento do **`vite build`**.
 
-| Variável | Onde copiar |
-|----------|-------------|
-| `SUPABASE_URL` | Supabase → Project Settings → API → Project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Idem → **service_role** (secreto; só servidor) |
+| Obrigatório na Vercel | Valor |
+|----------------------|--------|
+| `VITE_SUPABASE_URL` | Project URL do Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Chave **anon** `public` (Settings → API) |
 
-**Não** coloques a `service_role` no frontend Vite. A app chama `/api/collection/...` na Vercel, que usa estas variáveis.
+**Não basta** ter só `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (modelo antigo da API serverless): o **frontend não lê** esses nomes. Sem `VITE_SUPABASE_*`, o login mostra aviso de configuração em falta.
 
-Depois de adicionar ou alterar variáveis: **redeploy**. Sem isto a API responde **503** e a app fica em modo local.
+A **`service_role`** não deve ir em variáveis `VITE_*` (seria embutida no JS público). Para esta app atual **não** é necessária na Vercel para o álbum; podes removê-la se não tiveres outro uso.
 
-Opcional no cliente (`.env.local` na raiz, não commitar):
+Marca as variáveis para **Production** e **Preview** (e **Development** se usares). Depois de alterar: **Redeploy**.
 
-| Variável | Uso |
-|----------|-----|
-| `VITE_API_BASE` | Só se a API não for a mesma origem (ex.: `http://127.0.0.1:3000` com Vite + proxy) |
+Modelo local: [`.env.example`](.env.example) → **`.env.local`** na raiz (não commitar).
 
-Modelo: [`.env.example`](.env.example).
+## Google OAuth no Supabase
+
+1. **Google Cloud Console** → Credenciais → OAuth **Aplicação Web**.
+2. **Redirect URI**: `https://<PROJECT_REF>.supabase.co/auth/v1/callback`
+3. Supabase → **Authentication → Providers → Google** → ID + Secret.
+4. **Authentication → URL Configuration**: **Site URL** = URL de produção; **Redirect URLs** inclui `http://localhost:5173` (dev).
 
 ## Desenvolvimento local
 
-1. Cria o projeto no Supabase e corre o SQL da migração.
-2. `.env.local` na raiz com `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
-3. `npx vercel dev` na raiz (serve `/api` e carrega o `.env.local`).
-4. Opcional: noutro terminal `npm run dev` (Vite); o [`vite.config.js`](vite.config.js) faz **proxy** de `/api` para `http://127.0.0.1:3000`.
-
-Se vires **502** ou modo local: o Vite está a proxyar para a porta 3000 mas o `vercel dev` **não está a correr** aí — sobe o `vercel dev` primeiro.
-
-Só `npm run dev`: funciona em modo local (sem nuvem).
+1. SQL `002_albums_auth.sql` executado; provider de login ativo no Supabase.
+2. `.env.local` com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
+3. `npm run dev`.
 
 ## Build e preview
 
@@ -65,32 +60,14 @@ npm run build
 npm run preview
 ```
 
-## Deploy (Vercel)
-
-Repositório ligado à Vercel, variáveis `SUPABASE_*` definidas, **redeploy**. Build: `vite build`, saída `dist/`.
-
-### Checklist (produção)
-
-1. **Supabase** — SQL da migração executado; tabela `collections` visível em **Table Editor**.
-2. **Vercel** — `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (chave **service_role**, não `anon`).
-3. **Redeploy** após guardar as variáveis.
-4. **Opcional** — remover variáveis antigas `UPSTASH_REDIS_*` se ainda existirem (o código já não as usa).
-
-Na app, em **Ajustes**, o estado **“Sincronizado na nuvem”** confirma que o GET à API e o Supabase estão OK; **503** ou modo local indicam env em falta ou rede.
-
 ## Estrutura
 
-- `api/collection/[syncId].js` — API serverless (Supabase JS + service role)
-- `supabase/migrations/001_collections.sql` — schema da tabela `collections`
-- `src/hooks/useStickers.js` — estado, debounce PUT, migração `wc2026_owned`
-- `src/hooks/useTheme.js` — tema claro/escuro e `theme-color`
-- `src/pages/Settings.jsx` — sincronização + aparência
-- `src/pages/Collection.jsx` — estado do painel expandido por equipa (linhas de 2 grupos)
-- `src/components/SyncBar.jsx` — UI do código (também embutida em Ajustes)
-- `src/components/TeamFlag.jsx` / `src/data/flagCodes.js` — URLs de bandeira (flagcdn)
+- `src/lib/supabaseClient.js` — cliente Supabase (anon)
+- `src/pages/Login.jsx` — OAuth Google
+- `src/hooks/useStickers.js` — `albums` (debounce 500 ms)
+- `supabase/migrations/002_albums_auth.sql` — schema + RLS
 - `src/data/stickers.js` — dados do álbum
-- `public/sw.js` — cache PWA (produção; só origem própria no `fetch`)
-- `public/opening_img.png` (ou `.jpg`) — imagem opcional do ecrã inicial
+- `public/sw.js` — PWA (produção; só mesma origem no `fetch`)
 
 ## Licença
 

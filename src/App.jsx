@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStickers } from './hooks/useStickers'
 import { useTheme } from './hooks/useTheme'
+import { supabase, supabaseConfigured } from './lib/supabaseClient'
 import BottomNav from './components/BottomNav'
 import Collection from './pages/Collection'
 import Stats from './pages/Stats'
 import Settings from './pages/Settings'
+import Login from './pages/Login'
 import { GROUPS, FWC_SECTIONS, TOTAL_STICKERS } from './data/stickers'
 
 const ALL_CODES = [
@@ -12,19 +14,9 @@ const ALL_CODES = [
   ...GROUPS.flatMap((g) => g.teams.flatMap((t) => t.stickers.map((s) => s.code))),
 ]
 
-export default function App() {
+function AuthenticatedApp({ session, theme, setTheme }) {
   const [page, setPage] = useState('collection')
-  const { theme, setTheme } = useTheme()
-  const {
-    toggle,
-    isOwned,
-    countOwned,
-    syncId,
-    syncStatus,
-    syncError,
-    applySyncId,
-    reloadCollection,
-  } = useStickers()
+  const { toggle, isOwned, countOwned, albumStatus, albumError, reloadAlbum } = useStickers(session.user.id)
   const totalOwned = countOwned(ALL_CODES)
 
   return (
@@ -63,13 +55,12 @@ export default function App() {
         {page === 'stats' && <Stats countOwned={countOwned} />}
         {page === 'settings' && (
           <Settings
-            syncId={syncId}
-            syncStatus={syncStatus}
-            syncError={syncError}
-            applySyncId={applySyncId}
-            reloadCollection={reloadCollection}
+            session={session}
             theme={theme}
             setTheme={setTheme}
+            albumStatus={albumStatus}
+            albumError={albumError}
+            onReloadAlbum={reloadAlbum}
           />
         )}
       </main>
@@ -77,4 +68,49 @@ export default function App() {
       <BottomNav page={page} onNavigate={setPage} />
     </div>
   )
+}
+
+export default function App() {
+  const { theme, setTheme } = useTheme()
+  const [session, setSession] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
+  useEffect(() => {
+    if (!supabase || !supabaseConfigured) {
+      setSession(null)
+      setAuthLoading(false)
+      return
+    }
+
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s)
+      setAuthLoading(false)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  if (authLoading) {
+    return (
+      <div className="auth-loading">
+        <p>A carregar…</p>
+      </div>
+    )
+  }
+
+  if (!supabaseConfigured || !supabase) {
+    return <Login />
+  }
+
+  if (!session) {
+    return <Login />
+  }
+
+  return <AuthenticatedApp session={session} theme={theme} setTheme={setTheme} />
 }

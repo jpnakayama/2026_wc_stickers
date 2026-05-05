@@ -1,16 +1,46 @@
-import SyncBar from '../components/SyncBar'
+import { supabase } from '../lib/supabaseClient'
 
 export default function Settings({
-  syncId,
-  syncStatus,
-  syncError,
-  applySyncId,
-  reloadCollection,
+  session,
   theme,
   setTheme,
+  albumStatus,
+  albumError,
+  onReloadAlbum,
 }) {
+  const email = session?.user?.email ?? '—'
+
+  const signOut = async () => {
+    await supabase?.auth.signOut()
+  }
+
   return (
     <div className="page settings-page">
+      <section className="settings-card" aria-labelledby="settings-account-title">
+        <h2 id="settings-account-title" className="settings-card-title">
+          Conta
+        </h2>
+        <p className="settings-card-desc">
+          Sessão: <strong className="settings-email">{email}</strong>
+        </p>
+        <p className="settings-card-desc settings-album-status">
+          Álbum na nuvem:{' '}
+          {albumStatus === 'loading'
+            ? 'A carregar…'
+            : albumStatus === 'ready'
+              ? 'OK'
+              : `Erro${albumError ? ` (${albumError})` : ''}`}
+        </p>
+        <div className="settings-actions">
+          <button type="button" className="settings-reload-btn" onClick={() => onReloadAlbum()}>
+            Recarregar álbum
+          </button>
+          <button type="button" className="settings-signout-btn" onClick={signOut}>
+            Terminar sessão
+          </button>
+        </div>
+      </section>
+
       <section className="settings-card" aria-labelledby="settings-appearance-title">
         <h2 id="settings-appearance-title" className="settings-card-title">
           Aparência
@@ -32,23 +62,6 @@ export default function Settings({
             Claro
           </button>
         </div>
-      </section>
-
-      <section className="settings-card" aria-labelledby="settings-sync-title">
-        <h2 id="settings-sync-title" className="settings-card-title">
-          Sincronização
-        </h2>
-        <p className="settings-card-desc">
-          Código para partilhar a coleção entre dispositivos.
-        </p>
-        <SyncBar
-          embedded
-          syncId={syncId}
-          syncStatus={syncStatus}
-          syncError={syncError}
-          applySyncId={applySyncId}
-          reloadCollection={reloadCollection}
-        />
       </section>
     </div>
   )
