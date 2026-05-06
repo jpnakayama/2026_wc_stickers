@@ -122,12 +122,6 @@ button {
   line-height: 1.25;
 }
 
-.header-sub {
-  font-size: 11px;
-  color: var(--text-muted);
-  letter-spacing: 0.3px;
-}
-
 .header-session-email {
   margin: 2px 0 0;
   font-size: 10px;

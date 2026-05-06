@@ -40,7 +40,6 @@ function AuthenticatedApp({ session, theme, setTheme }) {
         </button>
         <div className="header-titles">
           <h1 className="header-title">FIFA World Cup 2026</h1>
-          <p className="header-sub">Álbum de Figurinhas</p>
           {session?.user?.email && (
             <p className="header-session-email" title={session.user.email}>
               {session.user.email}

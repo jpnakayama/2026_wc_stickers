@@ -1,4 +1,5 @@
-const CACHE = 'copa2026-v4'
+/* Aumentar CACHE (ex. v6) após mudanças grandes em HTML/imagens em /public para forçar atualização nos clientes. */
+const CACHE = 'copa2026-v5'
 const PRECACHE = ['/', '/index.html']
 
 function isHttpGet(request) {
@@ -9,6 +10,45 @@ function isHttpGet(request) {
   } catch {
     return false
   }
+}
+
+function isCacheableResponse(res) {
+  return res && res.status === 200 && res.type === 'basic'
+}
+
+/** Online: rede primeiro (HTML/rotas sempre frescos); offline: shell em cache. */
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE)
+  try {
+    const res = await fetch(request)
+    if (isCacheableResponse(res)) {
+      await cache.put(request, res.clone())
+    }
+    return res
+  } catch {
+    const cached = await cache.match(request)
+    if (cached) return cached
+    throw new Error('offline')
+  }
+}
+
+/** Mostra cache já guardado; em paralelo tenta rede para atualizar a próxima visita. */
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE)
+  const cached = await cache.match(request)
+
+  if (cached) {
+    fetch(request)
+      .then((res) => {
+        if (isCacheableResponse(res)) cache.put(request, res.clone()).catch(() => {})
+      })
+      .catch(() => {})
+    return cached
+  }
+
+  const res = await fetch(request)
+  if (isCacheableResponse(res)) await cache.put(request, res.clone()).catch(() => {})
+  return res
 }
 
 self.addEventListener('install', (e) => {
@@ -38,26 +78,12 @@ self.addEventListener('fetch', (e) => {
   }
   if (reqUrl.origin !== self.location.origin) return
 
-  e.respondWith(
-    caches.match(e.request).then((cached) => {
-      if (cached) return cached
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      networkFirst(e.request).catch(() => caches.match('/index.html'))
+    )
+    return
+  }
 
-      return fetch(e.request).then((res) => {
-        if (
-          res &&
-          res.status === 200 &&
-          res.type === 'basic' &&
-          isHttpGet(e.request)
-        ) {
-          const clone = res.clone()
-          caches.open(CACHE).then((c) => {
-            c.put(e.request, clone).catch(() => {
-              /* ignorar: scheme não suportado, quota, etc. */
-            })
-          })
-        }
-        return res
-      })
-    })
-  )
+  e.respondWith(staleWhileRevalidate(e.request))
 })
