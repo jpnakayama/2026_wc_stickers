@@ -8,7 +8,8 @@ PWA em React (Vite) para o álbum Panini da Copa 2026: **980** figurinhas. A col
 - **Sessão guardada no browser**: após entrar, visitas seguintes no mesmo dispositivo abrem logo a **coleção** até **terminares sessão** (Ajustes) ou limpares dados do site. **Guia anónima** não tem sessão, por isso mostra sempre o login.
 - **Coleção / Estatísticas / Ajustes** só com sessão válida; no arranque a app valida o token com o Supabase (`getUser`). Com sessão ativa, o **email** aparece em pequeno no cabeçalho.
 - **Coleção**: grelha de grupos; bandeiras (flagcdn); painel de figurinhas por linha de 2 grupos.
-- **Ajustes**: conta (email), estado do álbum, recarregar, tema claro/escuro (logo no header).
+- **Ajustes**: conta (email), estado do álbum, recarregar, tema claro/escuro.
+- **Identidade visual**: um único recurso gráfico, [`public/opening_img.png`](public/opening_img.png) (logo Copa 2026): **splash** ao abrir a app (`index.html`), **ecrã de carregamento** enquanto a sessão inicial valida no Supabase, **ícone** no cabeçalho (atalho para Ajustes), **favicon**, **apple-touch-icon** e **ícones** do [`manifest.json`](public/manifest.json). A imagem usa uma animação de **pulso** (escala) na splash e no carregamento.
 - **Migração local**: se existir `wc2026_owned` no `localStorage` (dados antigos) e o álbum na nuvem estiver vazio, a primeira carga tenta **enviar** esse mapa para o Supabase.
 
 ## Requisitos
@@ -86,6 +87,7 @@ npm run preview
 - `src/hooks/useStickers.js` — `albums` (debounce 500 ms)
 - `supabase/migrations/002_albums_auth.sql` — schema + RLS
 - `src/data/stickers.js` — dados do álbum
+- `public/opening_img.png` — arte oficial / ícones da app
 - `public/sw.js` — PWA
 
 ## Licença

@@ -31,7 +31,7 @@ function AuthenticatedApp({ session, theme, setTheme }) {
         >
           <img
             className="header-logo"
-            src="/logo.jpg"
+            src="/opening_img.png"
             alt=""
             width={44}
             height={44}
@@ -164,8 +164,20 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <div className="auth-loading">
-        <p>A carregar…</p>
+      <div
+        className="auth-loading"
+        role="status"
+        aria-live="polite"
+        aria-label="A carregar"
+      >
+        <img
+          className="auth-loading__img"
+          src="/opening_img.png"
+          alt=""
+          width={200}
+          height={200}
+          decoding="async"
+        />
       </div>
     )
   }

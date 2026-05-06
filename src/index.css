@@ -782,8 +782,27 @@ button {
   justify-content: center;
   min-height: 100%;
   padding: 24px;
-  color: var(--text-muted);
-  font-size: 14px;
+  background: var(--bg);
+}
+
+@keyframes opening-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.auth-loading__img {
+  max-width: min(240px, 70vw);
+  max-height: min(240px, 40vh);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  animation: opening-pulse 1.6s ease-in-out infinite;
+  will-change: transform;
 }
 
 .login-page {
@@ -1054,4 +1073,6 @@ button {
   height: auto;
   object-fit: contain;
   pointer-events: none;
+  animation: opening-pulse 1.6s ease-in-out infinite;
+  will-change: transform;
 }
