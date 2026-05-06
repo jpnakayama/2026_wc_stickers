@@ -69,6 +69,7 @@ button {
 .app-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   padding: 0 16px;
   height: var(--header-h);
@@ -111,29 +112,8 @@ button {
   pointer-events: none;
 }
 
-.header-titles {
-  flex: 1;
-}
-
-.header-title {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: -0.2px;
-  line-height: 1.25;
-}
-
-.header-session-email {
-  margin: 2px 0 0;
-  font-size: 10px;
-  color: var(--text-muted);
-  opacity: 0.85;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .header-badge {
+  flex-shrink: 0;
   display: flex;
   align-items: baseline;
   gap: 2px;
@@ -1013,10 +993,6 @@ button {
   word-break: break-all;
 }
 
-.settings-album-status {
-  margin-top: 4px;
-}
-
 .settings-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1024,19 +1000,13 @@ button {
   margin-top: 14px;
 }
 
-.settings-reload-btn,
 .settings-signout-btn {
   font-size: 13px;
   font-weight: 600;
   padding: 8px 14px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(248, 113, 113, 0.45);
   background: var(--surface2);
-  color: var(--text);
-}
-
-.settings-signout-btn {
-  border-color: rgba(248, 113, 113, 0.45);
   color: #f87171;
 }
 

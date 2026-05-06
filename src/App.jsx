@@ -17,7 +17,7 @@ const ALL_CODES = [
 
 function AuthenticatedApp({ session, theme, setTheme }) {
   const [page, setPage] = useState('collection')
-  const { toggle, isOwned, countOwned, albumStatus, albumError, reloadAlbum } = useStickers(session.user.id)
+  const { toggle, isOwned, countOwned } = useStickers(session.user.id)
   const totalOwned = countOwned(ALL_CODES)
 
   return (
@@ -38,14 +38,6 @@ function AuthenticatedApp({ session, theme, setTheme }) {
             decoding="async"
           />
         </button>
-        <div className="header-titles">
-          <h1 className="header-title">FIFA World Cup 2026</h1>
-          {session?.user?.email && (
-            <p className="header-session-email" title={session.user.email}>
-              {session.user.email}
-            </p>
-          )}
-        </div>
         <div className="header-badge">
           <span className="header-owned">{totalOwned}</span>
           <span className="header-sep">/</span>
@@ -59,14 +51,7 @@ function AuthenticatedApp({ session, theme, setTheme }) {
         )}
         {page === 'stats' && <Stats countOwned={countOwned} />}
         {page === 'settings' && (
-          <Settings
-            session={session}
-            theme={theme}
-            setTheme={setTheme}
-            albumStatus={albumStatus}
-            albumError={albumError}
-            onReloadAlbum={reloadAlbum}
-          />
+          <Settings session={session} theme={theme} setTheme={setTheme} />
         )}
       </main>
 

@@ -1,13 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 
-export default function Settings({
-  session,
-  theme,
-  setTheme,
-  albumStatus,
-  albumError,
-  onReloadAlbum,
-}) {
+export default function Settings({ session, theme, setTheme }) {
   const email = session?.user?.email ?? '—'
 
   const signOut = async () => {
@@ -23,18 +16,7 @@ export default function Settings({
         <p className="settings-card-desc">
           Sessão: <strong className="settings-email">{email}</strong>
         </p>
-        <p className="settings-card-desc settings-album-status">
-          Álbum na nuvem:{' '}
-          {albumStatus === 'loading'
-            ? 'A carregar…'
-            : albumStatus === 'ready'
-              ? 'OK'
-              : `Erro${albumError ? ` (${albumError})` : ''}`}
-        </p>
         <div className="settings-actions">
-          <button type="button" className="settings-reload-btn" onClick={() => onReloadAlbum()}>
-            Recarregar álbum
-          </button>
           <button type="button" className="settings-signout-btn" onClick={signOut}>
             Terminar sessão
           </button>

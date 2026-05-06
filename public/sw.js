@@ -1,5 +1,5 @@
 /* Aumentar CACHE (ex. v6) após mudanças grandes em HTML/imagens em /public para forçar atualização nos clientes. */
-const CACHE = 'copa2026-v5'
+const CACHE = 'copa2026-v6'
 const PRECACHE = ['/', '/index.html']
 
 function isHttpGet(request) {
